@@ -1,25 +1,26 @@
 const express = require('express');
-const { getTalkers, getTalkerById } = require('../utils');
+const { generateToken } = require('../utils');
+const {
+  getTalkers,
+  getTalkerById,
+  validEmail,
+  validPassword,
+} = require('../controllers');
 
 const router = express.Router();
 
 // req 01 endpoint returns status 200 with array of all talkers //
-router.get('/talker', async (_req, res) => {
-  const talkers = await getTalkers();
-  res.status(200).json(talkers);
-});
+router.get('/talker', getTalkers);
 
 // req 02 get talker by id //
-router.get('/talker/:id', async (req, res) => {
-  const { id } = req.params;
-  const response = await getTalkerById(id);
+router.get('/talker/:id', getTalkerById);
 
-  if (!response) {
-    return res.status(404).json({
-      message: 'Pessoa palestrante não encontrada',
-    });
-  }
-  return res.status(200).json(response);
+// req 03 and 04, generate token on validation //
+router.post('/login', validEmail, validPassword, (_req, res) => {
+  const newToken = generateToken();
+  return res.status(200).json({
+    token: newToken,
+  });
 });
 
 module.exports = router;
