@@ -28,4 +28,14 @@ function generateToken() {
   return token;
 }
 
-module.exports = { allTalkers, generateToken };
+async function fsWriteFile(item) {
+  const requestTalkers = await allTalkers();
+  requestTalkers.push(item);
+  const response = await fs.writeFile(
+    path.resolve(__dirname, '../talker.json'),
+    JSON.stringify(requestTalkers, null, 2),
+  );
+  return response;
+}
+
+module.exports = { allTalkers, generateToken, fsWriteFile };
