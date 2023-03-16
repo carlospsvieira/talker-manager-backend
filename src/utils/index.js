@@ -40,10 +40,6 @@ async function fsWriteFile(item) {
 
 async function fsWriteNewUponDelete(id) {
   const requestTalkers = await allTalkers();
-  const validateId = requestTalkers.some((talker) => talker.id === Number(id));
-
-  if (!validateId) return;
-  
   const newList = requestTalkers.filter((talker) => talker.id !== Number(id));
   const response = await fs.writeFile(
     path.resolve(__dirname, '../talker.json'),
