@@ -1,5 +1,5 @@
 const express = require('express');
-const { generateToken, allTalkers, fsWriteFile } = require('../utils');
+const { generateToken, allTalkers, fsWriteFile, fsWriteNewUponDelete } = require('../utils');
 const {
   getTalkers,
   getTalkerById,
@@ -16,7 +16,7 @@ const {
 const router = express.Router();
 
 // req 01 endpoint returns status 200 with array of all talkers //
-// req 5 route post new talker //
+// req 05 route post new talker //
 router
   .get('/talker', getTalkers)
   .post(
@@ -37,7 +37,40 @@ router
   );
 
 // req 02 get talker by id //
-router.get('/talker/:id', getTalkerById);
+// req 06 route edit talker //
+router
+  .get('/talker/:id', getTalkerById)
+  .put(
+    '/talker/:id',
+    validToken,
+    validName,
+    validAge,
+    validTalk,
+    validRate,
+    validWatchedAt,
+    async (req, res) => {
+      const { id } = req.params;
+      const { name, age, talk } = req.body;
+      const talkers = await allTalkers();
+      const updatedTalker = talkers.find((talker) => talker.id === Number(id));
+
+      if (!updatedTalker) {
+        return res.status(404).json({
+          message: 'Pessoa palestrante não encontrada',
+        });
+      }
+      updatedTalker.name = name;
+      updatedTalker.age = age;
+      updatedTalker.talk = talk;
+      await fsWriteFile(updatedTalker);
+      return res.status(200).json(updatedTalker);
+    },
+  )
+  .delete('/talker/:id', validToken, async (req, res) => {
+    const { id } = req.params;
+    await fsWriteNewUponDelete(id);
+    return res.status(204).json();
+  });
 
 // req 03 and 04, generate token on validation //
 router.post('/login', validEmail, validPassword, (_req, res) => {

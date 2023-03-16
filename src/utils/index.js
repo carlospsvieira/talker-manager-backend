@@ -38,4 +38,18 @@ async function fsWriteFile(item) {
   return response;
 }
 
-module.exports = { allTalkers, generateToken, fsWriteFile };
+async function fsWriteNewUponDelete(id) {
+  const requestTalkers = await allTalkers();
+  const validateId = requestTalkers.some((talker) => talker.id === Number(id));
+
+  if (!validateId) return;
+  
+  const newList = requestTalkers.filter((talker) => talker.id !== Number(id));
+  const response = await fs.writeFile(
+    path.resolve(__dirname, '../talker.json'),
+    JSON.stringify(newList, null, 2),
+  );
+  return response;
+}
+
+module.exports = { allTalkers, generateToken, fsWriteFile, fsWriteNewUponDelete };
