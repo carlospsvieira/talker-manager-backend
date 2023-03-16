@@ -1,4 +1,4 @@
-const { allTalkers } = require('../utils');
+const { allTalkers, fsWriteFile } = require('../utils');
 
 // get all talkers //
 async function getTalkers(_req, res) {
@@ -178,6 +178,32 @@ function validRate(req, res, next) {
   next();
 }
 
+async function createNewTalker(req, res) {
+  const item = req.body;
+  const talkers = await allTalkers();
+  item.id = talkers.length + 1;
+  await fsWriteFile(item);
+  return res.status(201).json(item);
+}
+
+async function updateTalker(req, res) {
+  const { id } = req.params;
+  const { name, age, talk } = req.body;
+  const talkers = await allTalkers();
+  const updatedTalker = talkers.find((talker) => talker.id === Number(id));
+
+  if (!updatedTalker) {
+    return res.status(404).json({
+      message: 'Pessoa palestrante não encontrada',
+    });
+  }
+  updatedTalker.name = name;
+  updatedTalker.age = age;
+  updatedTalker.talk = talk;
+  await fsWriteFile(updatedTalker);
+  return res.status(200).json(updatedTalker);
+}
+
 module.exports = {
   getTalkers,
   getTalkerById,
@@ -189,4 +215,6 @@ module.exports = {
   validTalk,
   validWatchedAt,
   validRate,
+  updateTalker,
+  createNewTalker,
 };

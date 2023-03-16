@@ -1,5 +1,5 @@
 const express = require('express');
-const { generateToken, allTalkers, fsWriteFile, fsWriteNewUponDelete } = require('../utils');
+const { generateToken, fsWriteNewUponDelete } = require('../utils');
 const {
   getTalkers,
   getTalkerById,
@@ -11,6 +11,8 @@ const {
   validRate,
   validWatchedAt,
   validTalk,
+  updateTalker,
+  createNewTalker,
 } = require('../controllers');
 
 const router = express.Router();
@@ -27,13 +29,7 @@ router
     validTalk,
     validRate,
     validWatchedAt,
-    async (req, res) => {
-      const item = req.body;
-      const talkers = await allTalkers();
-      item.id = talkers.length + 1;
-      await fsWriteFile(item);
-      return res.status(201).json(item);
-    },
+    createNewTalker,
   );
 
 // req 02 get talker by id //
@@ -48,23 +44,7 @@ router
     validTalk,
     validRate,
     validWatchedAt,
-    async (req, res) => {
-      const { id } = req.params;
-      const { name, age, talk } = req.body;
-      const talkers = await allTalkers();
-      const updatedTalker = talkers.find((talker) => talker.id === Number(id));
-
-      if (!updatedTalker) {
-        return res.status(404).json({
-          message: 'Pessoa palestrante não encontrada',
-        });
-      }
-      updatedTalker.name = name;
-      updatedTalker.age = age;
-      updatedTalker.talk = talk;
-      await fsWriteFile(updatedTalker);
-      return res.status(200).json(updatedTalker);
-    },
+    updateTalker,
   )
   .delete('/talker/:id', validToken, async (req, res) => {
     const { id } = req.params;
